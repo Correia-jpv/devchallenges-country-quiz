@@ -54,6 +54,7 @@ const App = () => {
   const [quizIndex, setQuizIndex] = React.useState<number>(0)
   const [quizView, setQuizView] = React.useState<string>('start')
   const [selectedAnswer, setSelectedAnswer] = React.useState<String | null>(null)
+  const [answerValidated, setAnswerValidated] = React.useState<Boolean>(false)
 
   const createQuiz = (countriesArr) => {
     const getShuffledArr = (arr) => {
@@ -175,45 +176,54 @@ const App = () => {
         </Typography>
         <List sx={{ padding: 0 }}>
           {quiz[quizIndex].answers.map((answer, answerIndex) => {
-            const answeredCorrectly = answer === quiz[quizIndex].correctAnswer && selectedAnswer
-            const buttonColor = answeredCorrectly || selectedAnswer === answer ? 'white' : 'primary.main'
-            const buttonBackgroundColor = answeredCorrectly ? 'success.main' : selectedAnswer === answer ? 'error.main' : undefined
-            const borderColor = answeredCorrectly ? 'success.main' : selectedAnswer === answer ? 'error.main' : 'primary.main'
+            const isCorrectAnswer = answer === quiz[quizIndex].correctAnswer && answerValidated
+            const isIncorrectAnswer = answer === selectedAnswer && answer !== quiz[quizIndex].correctAnswer && answerValidated
+            const isSelectedAnswer = answer === selectedAnswer && !answerValidated
+
+            const buttonColor = isCorrectAnswer || isIncorrectAnswer || isSelectedAnswer ? 'white' : 'primary.main'
+            const buttonBackgroundColor = isCorrectAnswer ? 'success.main' : isIncorrectAnswer ? 'error.main' : isSelectedAnswer ? 'warning.main' : 'default.main'
+
             return (
               <ListItem
                 key={answer}
                 disablePadding
                 sx={{ paddingY: '1em' }}
                 secondaryAction={
-                  answeredCorrectly ? (
-                    <IconButton disableRipple edge="end">
+                  isCorrectAnswer ? (
+                    <IconButton
+                      disableRipple
+                      edge="end"
+                      sx={{
+                        color: buttonColor,
+                      }}
+                    >
                       <CheckCircleOutline />
                     </IconButton>
-                  ) : selectedAnswer === answer ? (
-                    <IconButton disableRipple edge="end">
+                  ) : selectedAnswer === answer && answerValidated ? (
+                    <IconButton
+                      disableRipple
+                      edge="end"
+                      sx={{
+                        color: buttonColor,
+                      }}
+                    >
                       <HighlightOff />
                     </IconButton>
                   ) : undefined
                 }
               >
                 <ListItemButton
-                  color="secondary"
                   sx={{
                     color: buttonColor,
                     border: '2px solid',
                     borderRadius: 3,
-                    borderColor: borderColor,
+                    borderColor: buttonBackgroundColor,
                     bgcolor: buttonBackgroundColor,
                     ':hover': {
-                      color: 'white',
-                      bgcolor: 'warning.main',
-                      borderColor: 'warning.main',
-                      '& .MuiListItemIcon-root': {
-                        color: 'white',
-                      },
+                      bgcolor: buttonBackgroundColor.replace('main', 'dark'),
                     },
                   }}
-                  onClick={() => (!selectedAnswer ? setSelectedAnswer(answer) : undefined)}
+                  onClick={() => (!answerValidated ? setSelectedAnswer(answer) : undefined)}
                 >
                   <ListItemIcon
                     sx={{
@@ -236,11 +246,15 @@ const App = () => {
           color={'warning'}
           sx={{ borderRadius: 3, paddingX: 5, textTransform: 'capitalize' }}
           onClick={() => {
-            setSelectedAnswer(null)
-            quiz[quizIndex].correctAnswer === selectedAnswer ? setQuizIndex(quizIndex + 1) : setQuizView('results')
+            if (!answerValidated) setAnswerValidated(true)
+            else {
+              setSelectedAnswer(null)
+              setAnswerValidated(false)
+              quiz[quizIndex].correctAnswer === selectedAnswer ? setQuizIndex(quizIndex + 1) : setQuizView('results')
+            }
           }}
         >
-          {quiz[quizIndex].correctAnswer === selectedAnswer ? 'Next' : 'Check results'}
+          {!answerValidated ? 'Validate' : quiz[quizIndex].correctAnswer === selectedAnswer ? 'Next' : 'Check results'}
         </Button>
       </CardActions>
     </Card>
