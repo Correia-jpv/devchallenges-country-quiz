@@ -5,7 +5,23 @@ import { createTheme, ThemeProvider } from '@mui/material/styles'
 
 import Footer from './layout/Footer'
 import Header from './layout/Header'
-import { Button, Card, CardActions, CardContent, CardMedia, CssBaseline, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
+import {
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  CardMedia,
+  CssBaseline,
+  IconButton,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+} from '@mui/material'
 
 import { Box, Container, Typography } from '@mui/material'
 import { CheckCircleOutline, HighlightOff } from '@mui/icons-material'
@@ -50,6 +66,7 @@ const App = () => {
   }
 
   const [countries, setCountries] = React.useState<[]>([])
+  const [difficulty, setDifficulty] = React.useState<number>(0)
   const [quiz, setQuiz] = React.useState<QuizQuestion[]>([])
   const [quizIndex, setQuizIndex] = React.useState<number>(0)
   const [quizView, setQuizView] = React.useState<string>('start')
@@ -64,6 +81,18 @@ const App = () => {
         ;[newArr[i], newArr[rand]] = [newArr[rand], newArr[i]]
       }
       return newArr
+    }
+
+    let countriesArrCopy = []
+    switch (difficulty) {
+      case 0:
+        countriesArrCopy = countriesArr.sort((a, b) => b.population - a.population).slice(0, 50)
+        countriesArr = countriesArrCopy
+        break
+      case 1:
+        countriesArrCopy = countriesArr.sort((a, b) => b.population - a.population).slice(0, 150)
+        countriesArr = countriesArrCopy
+        break
     }
 
     const newQuiz: QuizQuestion[] = []
@@ -141,13 +170,22 @@ const App = () => {
         })
   }, [countries])
 
+  useEffect(() => {
+    if (countries.length > 0) createQuiz(countries)
+  }, [difficulty])
+
   const startQuizView = (
     <Card sx={{ padding: '1em', borderRadius: 5 }}>
       <CardMedia component="img" height="250" image={illustrationStartQuiz} alt="quiz" sx={{ objectFit: 'contain', padding: '2em' }} />
-      <CardContent>
+      <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <Typography variant="h5" textAlign={'center'} component="div">
           How good is your knowledge of countries around the globe?
         </Typography>
+        <Select value={difficulty.toString()} onChange={(event: SelectChangeEvent) => setDifficulty(parseInt(event.target.value))} displayEmpty sx={{ marginTop: 2, borderRadius: 3 }}>
+          <MenuItem value={0}>Decent 🤔</MenuItem>
+          <MenuItem value={1}>Pretty good 😀</MenuItem>
+          <MenuItem value={2}>Phenomenal 🤩</MenuItem>
+        </Select>
       </CardContent>
       <CardActions sx={{ justifyContent: 'center' }}>
         <Button
