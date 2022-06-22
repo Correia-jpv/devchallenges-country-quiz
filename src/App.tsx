@@ -31,6 +31,8 @@ import illustrationStartQuiz from './assets/undraw_quiz.svg'
 import illustrationQuizQuestion from './assets/undraw_adventure.svg'
 import illustrationQuizResults from './assets/undraw_winners.svg'
 
+import Confetti from './features/Confetti'
+
 const light = createTheme({
   palette: {
     mode: 'light',
@@ -288,7 +290,11 @@ const App = () => {
             else {
               setSelectedAnswer(null)
               setAnswerValidated(false)
-              quiz[quizIndex].correctAnswer === selectedAnswer ? setQuizIndex(quizIndex + 1) : setQuizView('results')
+              if (quiz[quizIndex].correctAnswer === selectedAnswer) setQuizIndex(quizIndex + 1)
+              else {
+                setQuizView('results')
+                Confetti()
+              }
             }
           }}
         >
